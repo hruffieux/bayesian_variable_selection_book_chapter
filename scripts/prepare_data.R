@@ -7,8 +7,27 @@ main_dir <- file.path(CORE_DIR, "bayesian_variable_selection_book_chapter/script
 
 setwd(main_dir)
 
+RNGkind("L'Ecuyer-CMRG") # to ensure reproducibility when using parallel processes
+my_seed <- 123
+set.seed(my_seed)
+
+## -----------------------------------------------------------------------------
+## Please install the following R package: echoseq using:
+## devtools::install_github("hruffieux/echoseq")
+## -----------------------------------------------------------------------------
+
 require(echoseq)
 
+bool_save <- TRUE
+
+## -------------------------------------------------------------
+## --- This RData file was generated using genotyping data -----
+## -- It can't be regenerated as we do not provide the real ----
+## -- genotyping data but the expression data and synthetic ----
+## -- genotyping data obtained by emulating the real can be ----
+## -- downloaded from data/replicated_data.R and loaded as 
+## -- done below -
+#
 load(file.path(data_dir, "replicated_data.RData"))
 
 vec_type <- names(list_expr)
@@ -60,4 +79,6 @@ stopifnot(length(unique(list_snp_names)) == 1)
 list_expr_names <- sapply(list_data, function(ll_type) names(ll_type$expr))
 stopifnot(length(unique(list_expr_names)) == 1)
 
-save(list_data, file = file.path(data_dir, "prepared_data.RData"))
+if (bool_save) {
+  save(list_data, file = file.path(data_dir, "prepared_data.RData"))
+}
