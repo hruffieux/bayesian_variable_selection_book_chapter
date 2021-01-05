@@ -22,7 +22,6 @@
 *notes/
 *output/
 *data/original_data/
-*data/prepared_data.RData
 *slurm_scripts/
 *tmp_*
 

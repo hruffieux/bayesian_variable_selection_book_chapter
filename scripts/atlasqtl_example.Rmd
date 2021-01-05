@@ -1,0 +1,96 @@
+---
+title: "ATLASQTL example"
+author: "Hélène Ruffieux"
+date: "1/5/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+rm(list = ls())
+
+CORE_DIR <- Sys.getenv("CORE_DIR")
+
+data_dir <- file.path(CORE_DIR, "bayesian_variable_selection_book_chapter/data/")
+out_dir <- file.path(CORE_DIR, "bayesian_variable_selection_book_chapter/output/")
+main_dir <- file.path(CORE_DIR, "bayesian_variable_selection_book_chapter/scripts/")
+setwd(main_dir)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Example of ATLASQTL run
+
+Please install the following package: `atlasqtl`
+# devtools::install_github("hruffieux/atlasqtl")
+
+
+```{r code, message=FALSE, echo = FALSE}
+require(atlasqtl)
+
+RNGkind("L'Ecuyer-CMRG") # to ensure reproducibility when using parallel processes
+seed <- 1
+set.seed(seed)
+
+# Obtained from running prepare_data.R first
+#
+load(file.path(data_dir, "prepared_data.RData"))
+
+n_cpus <- 4
+vec_type <- names(list_data)
+
+bool_save <- FALSE
+
+if( bool_save ){
+  res_dir <- paste0(out_dir, "atlasqtl_runs_seed_", seed, "/")
+
+  dir.create(res_dir, showWarnings = FALSE)
+
+  sink(paste(res_dir, "out.txt", sep = ""), append = F,
+       split = T, type = "output")
+  sink(file(paste(res_dir, "err.txt", sep = ""), open = "wt"),
+       type = "message")
+}
+
+mu_t <- 1 # prior number of SNPs associated with each expression level
+sd_t <- 2 # prior standard deviation for this number
+
+# Takes about 1min 30sec on a standard laptop with 4 CPUs
+#
+rt <- system.time(list_out <- parallel::mclapply(vec_type, function(type) {
+
+  snps <- list_data[[type]]$snps
+  expr <- list_data[[type]]$expr
+
+  stopifnot(rownames(snps) == rownames(expr))
+  
+  atlasqtl(Y = expr, X = snps, p0 = c(mu_t, sd_t^2))
+  
+}, mc.cores = n_cpus))
+
+names(list_out) <- vec_type
+print(rt)
+
+if (bool_save) {
+  save(list_out, rt, file = paste(res_dir, "output.RData", sep = "")) # add collinear back?
+}
+
+thres <- 0.8
+list_rs_thres <- lapply(list_out, function(ll_type) rowSums(ll_type$gam_vb>thres))
+
+vec_pch <- c(15, 4, 2, 21, 20)
+
+plot(list_rs_thres[[1]], pch = vec_pch[1], 
+     ylim = c(0, max(unlist(list_rs_thres))),
+     main = "Hotspot sizes",
+     xlab = "SNPs",
+     ylab = paste0("sum_k PPI_jk > ", thres))
+for (type_id in 2:5) {
+  points(list_rs_thres[[type_id]], pch = vec_pch[type_id])
+}
+legend("topleft", legend = vec_type, pch = vec_pch, bty = "n")
+
+## Reproducibility
+#
+sessionInfo()
+```
