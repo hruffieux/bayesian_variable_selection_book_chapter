@@ -21,8 +21,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Example of ATLASQTL run
 
+- code used to analyse the data of example xx of figure xx
+
 Please install the following package: `atlasqtl`
 # devtools::install_github("hruffieux/atlasqtl")
+# install.packages("parallel")
 
 
 ```{r code, message=FALSE, echo = FALSE}
@@ -32,13 +35,20 @@ RNGkind("L'Ecuyer-CMRG") # to ensure reproducibility when using parallel process
 seed <- 1
 set.seed(seed)
 
+# - genotypes cannot be shared, so emulate them and simulate genetic associations between genome and expression levels
+# - run on a laptop within seconds, restricted number of SNPs and levels (most variable only) - using the R package echoseq. See prepare data which produces the R object file prepared_data.RData below.
+
 # Obtained from running prepare_data.R first
 #
 load(file.path(data_dir, "prepared_data.RData"))
 
+# run the atlasqtl analyses in parallel for the 5 conditions
+# here laptop with 4 cores
 n_cpus <- 4
 vec_type <- names(list_data)
 
+# save the ouptut to a dedicated directory
+#
 bool_save <- FALSE
 
 if( bool_save ){
@@ -52,6 +62,13 @@ if( bool_save ){
        type = "message")
 }
 
+# atlasqtl only requires specifying two hyperparameters via the elicitation of a prior mean and sd for the number of
+# SNPs associated with each response.
+# no impact on the analysis, once using a permutation-based FDR threshold (null cases using the same prior specifications)
+# the remaining parameters are inferred in a fully Bayesian fashion
+# in particular, the hotspot propensity is assigned a horseshoe prior which circumvent ad-hoc specification of
+# high-level variances, inference sensitive to this specification
+#
 mu_t <- 1 # prior number of SNPs associated with each expression level
 sd_t <- 2 # prior standard deviation for this number
 
@@ -75,6 +92,7 @@ if (bool_save) {
   save(list_out, rt, file = paste(res_dir, "output.RData", sep = "")) # add collinear back?
 }
 
+# arbitrary threshold on the PPI. actual analysis uses a permutation-based FDR threshold. 
 thres <- 0.8
 list_rs_thres <- lapply(list_out, function(ll_type) rowSums(ll_type$gam_vb>thres))
 
