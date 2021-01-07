@@ -1,3 +1,7 @@
+# Rmd cache files:
+*scripts/atlasqtl_example_cache
+*scripts/atlasqtl_example_files
+
 .nfs*
 *~
 .DS_Store
