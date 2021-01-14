@@ -1,18 +1,22 @@
 ---
 title: "A monocyte eQTL analysis using ATLASQTL"
 author: "Hélène Ruffieux"
-date: "1/5/2021"
+date: "12/29/2020"
 output: html_document
+bibliography: references.bib
 ---
 
 
-### Motivation
+### Context
 
 This R markdown document consists of a short tutorial for performing expression
 quantitative trait locus (eQTL) analyses using the Bayesian mapping approach 
-ATLASQTL [ADD REF]. It is an online material for the [ADD REF] book chapter and 
+ATLASQTL whose R package is available 
+[here](https://github.com/hruffieux/atlasqtl). It is an online material for the 
+book chapter "Variable selection for hierarchically-related outcomes: models and 
+algorithms" [@ruffieux2021variable] published in [@tadesse2021handbook], and 
 uses data adapted from the monocyte eQTL analysis illustration discussed in 
-Section [ADD REF]. 
+Section [@ruffieux2020global]. 
 
 ATLASQTL implements a hierarchically sparse regression approach for modelling 
 jointly several thousands of genetic variants and molecular quantitative traits 
@@ -24,11 +28,11 @@ with proteomic, lipodomic or metabolic expression.
 ### Data
 
 The data used in this example consist of synthetic genotyping data which emulate 
-the genotypes (single nucleotide polymorphisms - SNPs) used in Section [ADD REF] 
-for the *LYZ* gene region (the latter require data access agreement and hence 
-cannot be shared directly). The expression data consist of resting 
-(unstimulated) monocytes, monocyte levels obtained from three stimulated 
-conditions (IFNg, LPS2h, LPS24h) and B-cells; see Section [ADD REF] for a full 
+the genotypes (single nucleotide polymorphisms - SNPs) used in Section 1.3.2 of 
+the book chapter for the *LYZ* gene region (the latter require data access 
+agreement and hence cannot be publicly shared). The expression data consist of 
+resting (unstimulated) monocytes, monocyte levels obtained from three stimulated 
+conditions (IFNg, LPS2h, LPS24h) and B-cells; see Section 1.3.2 for a full 
 description. Each of these transcriptomic datasets gives rise to its own eQTL 
 problem. 
 
@@ -36,7 +40,7 @@ As we are using synthetic SNP data, we need to simulate genetic association
 between the SNPs and each of these expression datasets. The two steps: 
 1) generation of synthetic SNPs from the real SNPs and 
 2) modification of the expression levels to create genetic associations
-are done using our in-house R package `echoseq` available at [ADD REF]. While 1)
+are done using our in-house R package `echoseq` available [here](https://github.com/hruffieux/echoseq). While 1)
 requires access to the real genotyping data, 2) can be run using the R script
 `prepare_data.R` available in this repository - alternatively, one can directly 
 use the `prepared_data.RData` R object file which contains the datasets 
@@ -50,7 +54,7 @@ run within seconds on a standard laptop (parallel execution can be enabled)
 ### Installation
 
 Please install the R package `atlasqtl` following the instructions provided 
-{r} [here] (https://github.com/hruffieux/atlasqtl#installation). Note that the 
+[here](https://github.com/hruffieux/atlasqtl#installation). Note that the 
 GSL library must be installed prior to installing the package.
 
 ### Analysis code
@@ -138,7 +142,8 @@ The remaining model parameters are inferred in a fully Bayesian fashion in
 particular, the hotspot propensity is assigned a horseshoe prior which 
 circumvent ad-hoc specification of high-level variances (a case where inference 
 is prone to strong bias). Our specification also has desirable multiplicity 
-adjustment properties for dealing with the large-response case, see [ADD REF].
+adjustment properties for dealing with the large-response case, see 
+@ruffieux2020global.
 ```{r hyperparameter-elicitation, include = TRUE}
 mu_t <- 1 # prior number of SNPs associated with each expression level
 sd_t <- 2 # prior standard deviation for this number
@@ -208,13 +213,14 @@ if (bool_save) {
 
 We finally display a Manhattan plot which shows the position of hotspots for the 
 five different eQTL analyses. Recall that we are using simulated data so these 
-do not reflect the real data analysis of Section [ADD REF] of the book
-chapter, although the code is similar to that used for producing Figure [ADD REF].
+do not reflect the real data analysis of Section 1.3.2 of the book chapter, 
+although the code is similar to that used for producing Figure 1.4.
 
 Also note that the presented there implemented permutation analyses to compute a
 calibrated Bayesian FDR threshold on the PPIs; we skip this for computational 
 economy and use an arbitrary threshold instead. The procedure to derive these
-permutation-based FDR threshold is described in details in [ADD REF VB and ATLAS].
+permutation-based FDR threshold is described in details in 
+@ruffieux2017efficient and @ruffieux2020global.
 ```{r manhattan-plot, include = TRUE, fig.align = 'center'}
 thres <- 0.8
 list_rs_thres <- lapply(list_out, function(ll_type) rowSums(ll_type$gam_vb>thres))
@@ -235,3 +241,5 @@ legend("topleft", legend = vec_type, pch = vec_pch, bty = "n")
 ```{r session-info, include = TRUE}
 sessionInfo() # for reproducibility
 ```
+
+# References
