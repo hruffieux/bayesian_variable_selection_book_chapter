@@ -38,7 +38,7 @@ if(!require(remotes)) install.packages("remotes")
 remotes::install_github("hruffieux/atlasqtl")
 ```
 
-# eQTL analysis
+## eQTL analysis
 
 The eQTL analysis can be run using the Rmarkdown script: scripts/atlasqtl_example.Rmd. This file also provides
 step-by-step guidance for the use and settings of the **atlasqtl** for our example.
