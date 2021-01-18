@@ -3,10 +3,11 @@
 ## Data
 
 The genotyping data are protected. We are therefore using a synthetic dataset emulating the real data. 
-The expression and replicated genotyping data are in data/replicated_data.RData.
+The expression and replicated genotyping data are in data/replicated_data.RData. The ready-to-use data
+with simulated genetic associations are in data/prepared_data.RData.
 
-**IMPORTANT NOTE:** this is a large file which is stored using Git Large File Storage. To clone this file along wi\
-th the repository, please install Git LFS, e.g., using Homebrew:
+**Important note:** these are large files which are stored using Git Large File Storage. To clone these
+files along with the repository, please install Git LFS, e.g., using Homebrew:
 
 ``` bash
 brew install git-lfs
@@ -17,37 +18,31 @@ and then initialise it for your account by using:
 ``` bash
 git lfs install
 ```
-(Alternatively, since this is the only large file, it can be downloaded manually from the Github interface.)
+(Alternatively, since there are only two such files, they can be downloaded manually from the Github interface.)
 
-We are then updating the real expression data to simulate genetic associations between the synthetic genotyping data and the transcript levels. 
-
-This last step is done as part of this repos using the R package **echoseq**, which may be installed using the folllowing `devtools` command:
+The file data/prepared_data.RData is obtained by updating the real expression data to simulate genetic 
+associations between the synthetic genotyping data and the transcript levels. This last step is obtained by 
+running the R file scripts/prepare_data.R after installing the R package **echoseq**:
 
 ```R
-devtools::install_github("hruffieux/echoseq")
+if(!require(remotes)) install.packages("remotes")
+remotes::install_github("hruffieux/echoseq")
 ```
 
 ## Algorithm
 
-The package **atlasqtl** used for the analysis may be installed using
+The package **atlasqtl** used for the analysis may also be installed with:
  
 ```R
-devtools::install_github("hruffieux/atlasqtl")
+if(!require(remotes)) install.packages("remotes")
+remotes::install_github("hruffieux/atlasqtl")
 ```
 
-## Workflow
+# eQTL analysis
 
-The scripts should be executed in the following order:
+The eQTL analysis can be run using the Rmarkdown script: scripts/atlasqtl_example.Rmd. This file also provides
+step-by-step guidance for the use and settings of the **atlasqtl** for our example.
 
-1. `prepare_data.R` 
-
-2. `atlasqtl_example.R` 
-
-3. `atlasqtl_permutations.R` 
-
-4. `fit_spline.R`
-
-5. `plot_manhattan.R`
 
 ## Issues
 
