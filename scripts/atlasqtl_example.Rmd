@@ -10,46 +10,47 @@ bibliography: references.bib
 ### Context
 
 This R markdown document consists of a short tutorial for performing expression
-quantitative trait locus (eQTL) analyses using the Bayesian mapping approach 
-ATLASQTL whose R package is available 
+quantitative trait locus (eQTL) analyses using the Bayesian hierarchical mapping 
+approach ATLASQTL whose R package is available 
 [here](https://github.com/hruffieux/atlasqtl). It is an online material for the 
 book chapter "Variable selection for hierarchically-related outcomes: models and 
 algorithms" [@ruffieux2021variable] published in [@tadesse2021handbook], and 
 uses data adapted from the monocyte eQTL analysis illustration discussed in 
-Section [@ruffieux2020global]. 
+Section 1.3.2. 
 
 ATLASQTL implements a hierarchically sparse regression approach for modelling 
 jointly several thousands of genetic variants and molecular quantitative traits 
 using efficient variational inference algorithms augmented with simulated 
 annealing schemes. Although the example presented below involves transcriptomic 
 expression, ATLASQTL can be used for any other type of molecular QTL problem, 
-with proteomic, lipodomic or metabolic expression. 
+with proteomic, lipodomic or metabolic traits.
 
 ### Data
 
 The data used in this example consist of synthetic genotyping data which emulate 
-the genotypes (single nucleotide polymorphisms - SNPs) used in Section 1.3.2 of 
-the book chapter for the *LYZ* gene region (the latter require data access 
-agreement and hence cannot be publicly shared). The expression data consist of 
-resting (unstimulated) monocytes, monocyte levels obtained from three stimulated 
-conditions (IFNg, LPS2h, LPS24h) and B-cells; see Section 1.3.2 for a full 
-description. Each of these transcriptomic datasets gives rise to its own eQTL 
-problem. 
+the genotypes (single nucleotide polymorphisms - SNPs) for the *LYZ* gene region 
+(the genotypes require setting up a data access agreement and hence cannot be 
+publicly shared). The expression data consist of resting (unstimulated) monocyte 
+levels, monocyte levels obtained from three stimulated conditions (IFNg, LPS2h, 
+LPS24h) and B-cells; see Section 1.3.2 of the book chapter for a full 
+description. To each of these transcriptomic datasets corresponds a separate 
+eQTL problem. 
 
 As we are using synthetic SNP data, we need to simulate genetic association 
-between the SNPs and each of these expression datasets. The two steps: 
+between the SNPs and the expression levels from each datasets. The two steps: 
 1) generation of synthetic SNPs from the real SNPs and 
 2) modification of the expression levels to create genetic associations
-are done using our in-house R package `echoseq` available [here](https://github.com/hruffieux/echoseq). While 1)
-requires access to the real genotyping data, 2) can be run using the R script
-`prepare_data.R` available in this repository - alternatively, one can directly 
-use the `prepared_data.RData` R object file which contains the datasets 
-ready-to-used for this tutorial. 
+are done using our in-house R package `echoseq` available 
+[here](https://github.com/hruffieux/echoseq). While 1) requires access to the 
+real genotyping data, 2) can be run using the R script `prepare_data.R` 
+available in this repository - alternatively, one can directly use the 
+`prepared_data.RData` R object file which contains the datasets ready-to-use for 
+this tutorial. 
 
 Finally, note that we restricted the analyses to the most variable the 
 transcriptomic levels and to the $250$ SNPs surrounding the *LYZ* gene in order 
 to limit the data file sizes and have the five eQTL analyses of this tutorial 
-run within seconds on a standard laptop (parallel execution can be enabled)
+run within seconds on a standard laptop (parallel execution can be enabled).
 
 ### Installation
 
@@ -60,7 +61,7 @@ GSL library must be installed prior to installing the package.
 ### Analysis code
 
 We first set the data, output and main directories for the analysis (please 
-change according to your own setup):
+edit according to your own setup):
 ```{r setup, include = TRUE}
 rm(list = ls())
 
@@ -91,8 +92,9 @@ We will run a total of five different eQTL analyses (for resting monocytes,
 IFNg, LPS2h, LPS24h monocytes and B-cells); the vector `vec_type` gathers the 
 names of these eQTL problems. The five analyses can be run in parallel by first 
 specifying the number of CPUs to be used. Here we are using the $4$ cores of our 
-standard laptop, but please change this number according to your setup. 
-Setting `n_cpus <- 1` corresponds to a serial execution.
+laptop, but please change this number according to your setup. 
+Setting `n_cpus <- 1` corresponds to a serial execution (e.g., needed for 
+Windows users).
 ```{r parallel-execution, include = TRUE}
 vec_type <- names(list_data)
 
@@ -106,7 +108,7 @@ stopifnot(length(q) == 1) # all datasets involve the same number of traits
 
 n <- sapply(list_data, function(ll_type) nrow(ll_type$expr))
 n_check <- sapply(list_data, function(ll_type) nrow(ll_type$expr))
-stopifnot(all.equal(n, n_check)) # same number of samples for SNPs and traits in within eQTL problems
+stopifnot(all.equal(n, n_check)) # same number of samples for SNPs and traits within each eQTL problems
 rm(n_check)
 
 vec_type
@@ -136,12 +138,12 @@ ATLASQTL requires the specification of just two hyperparameters via the
 elicitation of a prior mean and variance for the number of SNPs associated with 
 each trait. The impact of these choices on the analysis is limited, and 
 essentially non existent once a permutation-based FDR threshold is employed 
-(with the "null-case" permutation runs using the same prior specifications). 
+(where the "null-case" permutation runs use the same prior specifications). 
 
-The remaining model parameters are inferred in a fully Bayesian fashion in 
+The remaining model parameters are inferred in a fully Bayesian fashion. In 
 particular, the hotspot propensity is assigned a horseshoe prior which 
-circumvent ad-hoc specification of high-level variances (a case where inference 
-is prone to strong bias). Our specification also has desirable multiplicity 
+circumvent ad-hoc specifications of top-level variances (a case where inference 
+is prone to strong biases). Our specification also has desirable multiplicity 
 adjustment properties for dealing with the large-response case, see 
 @ruffieux2020global.
 ```{r hyperparameter-elicitation, include = TRUE}
@@ -150,9 +152,9 @@ sd_t <- 2 # prior standard deviation for this number
 ```
 
 The next chunk runs the five ATLASQTL analyses in parallel, also storing the 
-overall run time. We are using the default annealing setting, namely with a 
-geometric schedule on the inverse temperature, initial temperature of $2$ and 
-$10$ different temperatures. This specification as well as alternative options
+overall run time. We are using the default annealing setting, namely a geometric 
+schedule on the inverse temperature, initial temperature of $2$ and $10$ 
+different temperatures. This specification as well as alternative options
 are described in greater details on the help page of the function, by running
 `?atlasqtl`. A number of additional settings (e.g., tolerance, maximum number of
 iterations, checkpointing, etc) are also detailed there.
@@ -181,12 +183,12 @@ names(list_out) <- vec_type
 print(rt)
 ```
 
-The object return by `atlasqtl` contains a range of useful posterior quantities 
-to assess, e.g., 
-* pairwise associations between each pair of SNP and trait: using the 
-variational posterior probabilities (PPIs) stored in `gam_vb` ($p \times q$ matrix) and 
-the variational posterior means of the regression estimates stored in `beta_vb` 
-($p \times q$ matrix);
+The object returned by `atlasqtl` contains a range of useful posterior 
+quantities, which can be employed to assess:
+* the pairwise associations between each pair of SNP and trait: using the 
+variational posterior probabilities (PPIs) stored in `gam_vb` 
+($p \times q$ matrix) and the variational posterior means of the regression 
+estimates stored in `beta_vb` ($p \times q$ matrix);
 * the hotspot propensities: using the variational posterior mean of $\theta_s$ 
 stored in `theta_vb (vector of length $p$).
 
@@ -206,20 +208,21 @@ summary(atlasqtl_unstim$theta_vb) # E(theta | y)
 If `bool_save = TRUE`, the full output is saved in the directory created above.
 ```{r output-save, include = TRUE}
 if (bool_save) {
-  save(list_out, rt, file = paste(res_dir, "output.RData", sep = "")) # add collinear back?
+  save(list_out, rt, file = paste(res_dir, "output.RData", sep = "")) 
 }
 ```
 
 
-We finally display a Manhattan plot which shows the position of hotspots for the 
-five different eQTL analyses. Recall that we are using simulated data so these 
-do not reflect the real data analysis of Section 1.3.2 of the book chapter, 
-although the code is similar to that used for producing Figure 1.4.
+We finally display a Manhattan-type plot which indicates the position of the
+hotspots, as estimated in the five different eQTL analyses. Recall that we are 
+using simulated data so these results do not reflect the real data analysis of 
+Section 1.3.2 of the book chapter, although the code is similar to that used for 
+producing Figure 1.4.
 
-Also note that the presented there implemented permutation analyses to compute a
-calibrated Bayesian FDR threshold on the PPIs; we skip this for computational 
-economy and use an arbitrary threshold instead. The procedure to derive these
-permutation-based FDR threshold is described in details in 
+Also note that the analyses of the book chapter implement a permutation analyses 
+to compute calibrated Bayesian FDR thresholds on the PPIs; we skip this for 
+computational economy and use an arbitrary threshold instead. The procedure to 
+derive these permutation-based FDR threshold is described in details in 
 @ruffieux2017efficient and @ruffieux2020global.
 ```{r manhattan-plot, include = TRUE, fig.align = 'center'}
 thres <- 0.8
