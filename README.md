@@ -1,6 +1,7 @@
-# Example for Bayesian variable selection book chapter
+## Example for Bayesian variable selection book chapter: 
+### Variable selection for hierarchically-related outcomes: models and algorithms
 
-## Data
+### Data
 
 The genotyping data are protected. We are therefore using a synthetic dataset emulating the real data. 
 The expression and replicated genotyping data are in data/replicated_data.RData. The ready-to-use data
@@ -29,7 +30,7 @@ if(!require(remotes)) install.packages("remotes")
 remotes::install_github("hruffieux/echoseq")
 ```
 
-## Algorithm
+### Algorithm
 
 The package **atlasqtl** used for the analysis may also be installed with:
  
@@ -38,13 +39,13 @@ if(!require(remotes)) install.packages("remotes")
 remotes::install_github("hruffieux/atlasqtl")
 ```
 
-## eQTL analysis
+### eQTL analysis
 
 The eQTL analysis can be run using the Rmarkdown script: scripts/atlasqtl_example.Rmd. This file also provides
 step-by-step guidance for the use and settings of the **atlasqtl** for our example.
 
 
-## Issues
+### Issues
 
 To report an issue, please use the 
 [issue tracker](https://github.com/hruffieux/bayesian_variable_selection_book_chapter/issues) 
