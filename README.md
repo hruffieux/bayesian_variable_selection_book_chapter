@@ -15,11 +15,18 @@ files along with the repository, please install Git LFS, e.g., using Homebrew:
 brew install git-lfs
 ```
 
-and then initialise it for your account by using:
+and, within the cloned repository, initialise it for your account by using:
 
 ``` bash
 git lfs install
 ```
+
+and retrieve all large files:
+
+``` bash
+git lfs pull
+```
+
 (Alternatively, since there are only two such files, they can be downloaded manually from the Github interface.)
 
 The file [data/prepared_data.RData](https://github.com/hruffieux/bayesian_variable_selection_book_chapter/blob/master/data/prepared_data.RData) 
